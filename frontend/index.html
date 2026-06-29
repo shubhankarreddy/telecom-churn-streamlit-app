@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telecom Churn SQL Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="background-glow"></div>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Chatbot Style SQL Analytics</p>
+        <h1>Telecom Churn Control Room</h1>
+      </div>
+      <button class="ghost-btn">Open Streamlit App</button>
+    </header>
+
+    <section class="query-section card">
+      <label for="queryInput">Ask a business question</label>
+      <div class="query-row">
+        <input id="queryInput" type="text" value="show me customers by plan" />
+        <button class="primary-btn">Run Query</button>
+      </div>
+      <p class="hint">Supports natural language and SQL (read-only).</p>
+    </section>
+
+    <section class="cards-grid">
+      <article class="card insight-card">
+        <h3>SQL Output</h3>
+        <p>Results are rendered in a structured table for quick analysis.</p>
+      </article>
+      <article class="card insight-card">
+        <h3>View Visualisation</h3>
+        <p>Switch between bar, line, and distribution charts based on output shape.</p>
+      </article>
+      <article class="card insight-card">
+        <h3>Download Visualisation</h3>
+        <p>Export your chart as PNG to share in reports and decision decks.</p>
+      </article>
+    </section>
+
+    <section class="card dual-panel">
+      <div>
+        <h2>SQL Analytics Stream</h2>
+        <p>Natural language query → SQL generation → DBMS run → insights + visual export.</p>
+      </div>
+      <div>
+        <h2>Prediction Stream</h2>
+        <p>Use the same data flow to score churn risk and surface action-ready flags.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
