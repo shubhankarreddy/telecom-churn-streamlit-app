@@ -15,8 +15,24 @@ from sklearn.preprocessing import OneHotEncoder
 st.set_page_config(page_title="Telecom Churn SQL + Prediction", layout="wide")
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_PATH = BASE_DIR.parent / "data" / "clean" / "telecom_churn_clean.csv"
 TABLE_NAME = "telecom_churn"
+
+
+def get_candidate_data_paths() -> list[Path]:
+    # Order matters: try the app folder first, then common project folders.
+    return [
+        BASE_DIR / "telecom_churn_clean.csv",
+        BASE_DIR / "data" / "telecom_churn_clean.csv",
+        BASE_DIR / "data" / "clean" / "telecom_churn_clean.csv",
+        BASE_DIR.parent / "telecom_churn_clean.csv",
+    ]
+
+
+def find_dataset_path() -> Path | None:
+    for path in get_candidate_data_paths():
+        if path.exists():
+            return path
+    return None
 
 
 def _normalize_binary(series: pd.Series) -> pd.Series:
@@ -45,6 +61,21 @@ def _normalize_binary(series: pd.Series) -> pd.Series:
 @st.cache_data
 def load_data(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
+    df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
+
+    object_cols = df.select_dtypes(include=["object"]).columns.tolist()
+    for col in object_cols:
+        df[col] = df[col].astype(str).str.strip()
+
+    if "churn" in df.columns:
+        df["churn"] = _normalize_binary(df["churn"])
+
+    return df
+
+
+@st.cache_data
+def load_data_from_uploaded_file(uploaded_file) -> pd.DataFrame:
+    df = pd.read_csv(uploaded_file)
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
     object_cols = df.select_dtypes(include=["object"]).columns.tolist()
@@ -217,11 +248,34 @@ def main():
     st.title("Telecom Churn: Chat SQL Analytics + Prediction")
     st.caption("Type a business query, run SQL-style analytics, visualize output, and predict churn in one app.")
 
-    if not DATA_PATH.exists():
-        st.error(f"Dataset not found at: {DATA_PATH}")
-        return
+    dataset_path = find_dataset_path()
+    df = None
 
-    df = load_data(DATA_PATH)
+    if dataset_path is not None:
+        st.caption(f"Loaded dataset from: {dataset_path}")
+        df = load_data(dataset_path)
+    else:
+        candidate_paths = "\n".join(f"- {p}" for p in get_candidate_data_paths())
+        st.error(
+            "Dataset file 'telecom_churn_clean.csv' was not found in expected locations. "
+            "Please place it in one of these paths or upload it below:\n\n"
+            f"{candidate_paths}"
+        )
+        uploaded_file = st.file_uploader(
+            "Upload telecom_churn_clean.csv",
+            type=["csv"],
+            help="Use this if the dataset is not committed in the repo.",
+        )
+        if uploaded_file is None:
+            return
+
+        try:
+            df = load_data_from_uploaded_file(uploaded_file)
+            st.success("Dataset loaded from uploaded file.")
+        except Exception as exc:
+            st.error(f"Failed to read uploaded CSV: {exc}")
+            return
+
     conn = build_db(df)
 
     try:
